@@ -18,25 +18,25 @@ class PyGpsPlotMain(TclWinBase):
 
         row = 0
         self.set_defaults()
-        self.breite = self.makeentry(erow=row, lrow=row,
-                                     caption="Breitengrad",
-                                     width=2,
-                                     textvariable=self.breitengrad_tv)
+        self.breite = self.make_double_entry(erow=row, lrow=row,
+                                             caption="Breitengrad",
+                                             width=4,
+                                             textvariable=self.breitengrad_tv)
         row += 1
-        self.minuten = self.makeentry(erow=row, lrow=row,
-                                      caption="Anzahl Minuten",
-                                      textvariable=self.minuten_tv,
-                                      width=2)
+        self.minuten = self.make_int_entry(erow=row, lrow=row,
+                                           caption="Anzahl Minuten",
+                                           textvariable=self.minuten_tv,
+                                           width=2)
         row += 1
-        self.minuten = self.makeentry(erow=row, lrow=row,
-                                      caption="Maßstab",
-                                      textvariable=self.massstab_tv,
-                                      width=6)
+        self.massstab = self.make_int_entry(erow=row, lrow=row,
+                                            caption="Maßstab",
+                                            textvariable=self.massstab_tv,
+                                            width=6)
         row += 1
-        self.missweisung = self.makeentry(erow=row, lrow=row,
-                                          caption="Missweisung /°",
-                                          textvariable=self.missweisung_tv,
-                                          width=3)
+        self.missweisung = self.make_double_entry(erow=row, lrow=row,
+                                                  caption="Missweisung /°",
+                                                  textvariable=self.missweisung_tv,
+                                                  width=3)
         row += 1
         self.create_plotter_bu = self.makebutton(erow=row,
                                                  caption="Anzeigen",
@@ -50,12 +50,12 @@ class PyGpsPlotMain(TclWinBase):
                                       width=400, height=600,
                                       bg="white")
         self.canvas.bind("<Configure>", self.resize_canvas)
-
+        
         for i in range(0, row):
             self.rowconfigure(i, weight=0, pad=5)
 
         self.rowconfigure(row, weight=1, pad=5)
-
+        
         self.columnconfigure(0, weight=0, pad=5)
         self.columnconfigure(1, weight=0, pad=5)
         self.columnconfigure(2, weight=1, pad=5)
@@ -64,7 +64,7 @@ class PyGpsPlotMain(TclWinBase):
         self.pack(fill=tki.BOTH, expand=tki.YES)
 
     def resize_canvas(self, event):
-        """event callback fuer die Groessenaenderung des cnvas
+        """evend callback fue die Groessenaenderung des cnvas
         """
         self.view_plotter()
 
@@ -85,22 +85,22 @@ class PyGpsPlotMain(TclWinBase):
         """cmd um den Plotter auf dem Canvas darzustellen
         """
         self.canvas.delete("all")
-        missweisung = self.missweisung_tv.get()
-        massstab = self.massstab_tv.get()
-        minuten = self.minuten_tv.get()
-        breit = self.breitengrad_tv.get()
-        plotter = PlotterPrinter(breit, massstab, missweisung, minuten)
+        mw = self.missweisung_tv.get()
+        m = self.massstab_tv.get()
+        bm = self.minuten_tv.get()
+        br = self.breitengrad_tv.get()
+        plotter = PlotterPrinter(br, m, mw, bm)
         plotter.print_on_canvas(self.canvas)
 
     def create_svg(self):
         """cmd um den Plotter im svg-format zu produzieren
         """
-        missw = self.missweisung_tv.get()
-        mass = self.massstab_tv.get()
-        bmi = self.minuten_tv.get()
-        brg = self.breitengrad_tv.get()
-        plotter = PlotterPrinter(brg, mass, missw, bmi)
-        svg = plotter.produce_svg()
+        mw = self.missweisung_tv.get()
+        m = self.massstab_tv.get()
+        bm = self.minuten_tv.get()
+        br = self.breitengrad_tv.get()
+        plotter = PlotterPrinter(br, m, mw, bm)
+        plotter.produce_svg()
 
 if __name__ == '__main__':
     MW = PyGpsPlotMain("PyGpsPlot")

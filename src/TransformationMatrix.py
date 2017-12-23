@@ -17,21 +17,21 @@ class TransformationMatrix():
         tsmat = numpy.matrix([
             [scalefact, 0, movex],
             [0, scalefact, movey],
-            [0, 0, 1]])
-
+            [0,0,1]])
+        
         rotmat = numpy.matrix([
             [math.cos(rotateby), -math.sin(rotateby), 0],
             [math.sin(rotateby), math.cos(rotateby), 0],
             [0, 0, 1]])
         
             
-        res.transmat = tsmat * rotmat
+        res.transmat =  tsmat * rotmat
         return res
 
     
     @classmethod
     def from_trans_mat(cls, other):
-        """Konstruktor fuer eine T-Matrix als Kopie einer anderen T-Matrix
+        """Konstruktor für eine T-Matrix als Kopie einer anderen T-Matrix
         """
         res = TransformationMatrix()
         res.transmat = other.transmat
