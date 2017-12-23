@@ -3,9 +3,10 @@
 import tkinter as tki
 
 class TclWinBaseUsageException(BaseException):
-    """Exception für Nutzungsfehler dieses Moduls
+    """Exception fuer Nutzungsfehler dieses Moduls
     """
     def __init__(self, arg):
+        super().__init__()
         self.args = arg
 
 
@@ -20,7 +21,7 @@ class TclWinBase(tki.Frame):
 
     def __init__(self, title):
         #NoDefaultRoot()
-        self.root = tki.Tk()   
+        self.root = tki.Tk()
         super().__init__(self.root, padx=5, pady=5)
         self.root.grid_columnconfigure(0, weight=1)
         self.root.grid_rowconfigure(0, weight=1)
@@ -44,12 +45,12 @@ class TclWinBase(tki.Frame):
     def maketext(self, lcol=0, lrow=0, erow=0, ecol=1, caption='', width=None, **options):
         """create a multiple single line text widget with a label/caption in another column
         """
-        tki.Label(self, text=caption).grid(row=lrow, column=lcol, sticky=NE)
+        tki.Label(self, text=caption).grid(row=lrow, column=lcol, sticky=tki.NE)
         entry = tki.Text(self, **options)
         if width:
             entry.config(width=width)
-    
-        entry.grid(row=erow, column=ecol, sticky=W)
+
+        entry.grid(row=erow, column=ecol, sticky=tki.W)
         return entry
 
     def makeentry(self, lcol=0, lrow=0, erow=0, ecol=1, caption='', width=None, **options):
@@ -64,8 +65,8 @@ class TclWinBase(tki.Frame):
 
     def set_entry_text(self, entry, text):
         """Set text in text entry to a given text"""
-        entry.delete(0, END)
-        entry.insert(END, text)
+        entry.delete(0, tki.END)
+        entry.insert(tki.END, text)
 
     def makecheck(self, ecol=0, erow=0, caption='', **options):
         """create a checkbox with a label"""
@@ -76,14 +77,14 @@ class TclWinBase(tki.Frame):
     def makebutton(self, erow=0, ecol=0, caption='Button', 
                    width=None, cmd=None, sticky=tki.W, **options):
         """create a button widget"""
-        bu = tki.Button(self,
-                        text=caption,
-                        command=cmd,
-                        **options)
+        butt = tki.Button(self,
+                          text=caption,
+                          command=cmd,
+                          **options)
         
-        bu.grid(row=erow, column=ecol, sticky=sticky)
+        butt.grid(row=erow, column=ecol, sticky=sticky)
 
-        return bu
+        return butt
 
     def makecanvas(self, erow=0, ecol=0, rspan=1, cspan=1, sticky=tki.NSEW, **options):
         """create a canvas widget"""
@@ -98,26 +99,26 @@ class TclWinBase(tki.Frame):
                  scrollvert=True, scrollhor=False,
                  **options):
         
-        tki.Label(self, text=caption).grid(row=lrow, column=lcol, sticky=NE)
+        tki.Label(self, text=caption).grid(row=lrow, column=lcol, sticky=tki.NE)
         
-        if scrollvert == True:
-            yScroll = tki.Scrollbar(self, orient=VERTICAL)
-            yScroll.grid(row=erow, column=ecol+1, sticky=N+S)
+        if scrollvert is True:
+            yscroll = tki.Scrollbar(self, orient=tki.VERTICAL)
+            yscroll.grid(row=erow, column=ecol+1, sticky=tki.N+tki.S)
             
-        if scrollhor == True:
-            xScroll = tki.Scrollbar(self, orient=HORIZONTAL)
-            xScroll.grid(row=erow+1, column=ecol, sticky=E+W)
+        if scrollhor is True:
+            xscroll = tki.Scrollbar(self, orient=tki.HORIZONTAL)
+            xscroll.grid(row=erow+1, column=ecol, sticky=tki.E+tki.W)
 
         lst = tki.Listbox(self, **options)
         lst.grid(row=erow, column=ecol)
         
-        if scrollvert == True:
-            lst.config(yscrollcommand=yScroll.set)
-            yScroll['command'] = lst.yview
+        if scrollvert is True:
+            lst.config(yscrollcommand=yscroll.set)
+            yscroll['command'] = lst.yview
 
-        if scrollhor == True:
-            lst.config(xscrollcommand=xScroll.set)
-            xScroll['command'] = lst.xview
+        if scrollhor is True:
+            lst.config(xscrollcommand=xscroll.set)
+            xscroll['command'] = lst.xview
 
         if width:
             lst.config(width=width)
@@ -140,6 +141,6 @@ class TclWinBase(tki.Frame):
         else:
             answ = tki.StringVar()
 
-        return answ    
+        return answ
         
 

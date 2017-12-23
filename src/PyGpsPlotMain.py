@@ -49,13 +49,13 @@ class PyGpsPlotMain(TclWinBase):
         self.canvas = self.makecanvas(ecol=2, rspan=row+1,
                                       width=400, height=600,
                                       bg="white")
-        self.canvas.bind("<Configure>", self.resize_canvas) 
-        
+        self.canvas.bind("<Configure>", self.resize_canvas)
+
         for i in range(0, row):
             self.rowconfigure(i, weight=0, pad=5)
 
         self.rowconfigure(row, weight=1, pad=5)
-        
+
         self.columnconfigure(0, weight=0, pad=5)
         self.columnconfigure(1, weight=0, pad=5)
         self.columnconfigure(2, weight=1, pad=5)
@@ -64,7 +64,7 @@ class PyGpsPlotMain(TclWinBase):
         self.pack(fill=tki.BOTH, expand=tki.YES)
 
     def resize_canvas(self, event):
-        """evend callback fue die Groessenaenderung des cnvas
+        """event callback fuer die Groessenaenderung des cnvas
         """
         self.view_plotter()
 
@@ -85,21 +85,21 @@ class PyGpsPlotMain(TclWinBase):
         """cmd um den Plotter auf dem Canvas darzustellen
         """
         self.canvas.delete("all")
-        mw = self.missweisung_tv.get()
-        m = self.massstab_tv.get()
-        bm = self.minuten_tv.get()
-        br = self.breitengrad_tv.get()
-        plotter = PlotterPrinter(br, m, mw, bm)
-        plotter.printOnCanvas(self.canvas)
+        missweisung = self.missweisung_tv.get()
+        massstab = self.massstab_tv.get()
+        minuten = self.minuten_tv.get()
+        breit = self.breitengrad_tv.get()
+        plotter = PlotterPrinter(breit, massstab, missweisung, minuten)
+        plotter.print_on_canvas(self.canvas)
 
     def create_svg(self):
         """cmd um den Plotter im svg-format zu produzieren
         """
-        mw = self.missweisung_tv.get()
-        m = self.massstab_tv.get()
-        bm = self.minuten_tv.get()
-        br = self.breitengrad_tv.get()
-        plotter = PlotterPrinter(br, m, mw, bm)
+        missw = self.missweisung_tv.get()
+        mass = self.massstab_tv.get()
+        bmi = self.minuten_tv.get()
+        brg = self.breitengrad_tv.get()
+        plotter = PlotterPrinter(brg, mass, missw, bmi)
         svg = plotter.produce_svg()
 
 if __name__ == '__main__':
