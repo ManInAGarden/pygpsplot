@@ -184,7 +184,6 @@ class ValidateDoubleEntry():
         self.entry.grid(**options)
 
     def validate_number(self, d, i, s):
-        print(i)
         if s == '':
             return True
 
@@ -209,7 +208,6 @@ class ValidateIntegerEntry():
         self.entry.grid(**options)
 
     def validate_number(self, d, i, s):
-        print(i)
         if s == '':
             return True
 
