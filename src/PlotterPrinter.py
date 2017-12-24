@@ -195,6 +195,11 @@ class PlotterPrinter:
 
         return answ
 
+    def get_deg(self, angle):
+        """Liefert eine Zahl als string zurück und stellt die Einheit deg dahinter
+        für die Nutzung mit svg Bogenmasswinkeln"""
+        answ = '{0}deg'.format(angle)
+
     def produce_svg(self):
         """Gibt einen string zurück der den Plotter mit den eingestellten Parametern im svg-Format
         enthält.
@@ -354,7 +359,7 @@ class PlotterPrinter:
     def __dvg_printtick(self, dwg, tm, xc, yc, radius, angle, tl, ticktxt):
         """Einen Strich der Kompassrose mit angeschriebenr Gradzahl darstellen
         """
-        bogwink = (2 * math.pi * angle) / 360.0
+        bogwink = -(2 * math.pi * angle) / 360.0
         part_tm = TransformationMatrix.from_params_simple(xc, yc, radius, bogwink)
         my_tm = TransformationMatrix.from_followed_trans(part_tm, tm)
         x1, y1 = my_tm.transform(0.0, 1.0)
@@ -364,3 +369,6 @@ class PlotterPrinter:
                          self.get_mm((x2, y2)), 
                          stroke='black'))
         #canv.create_text(xt, yt, text=ticktxt, angle = -angle, font=("Helvetika", "7", "bold"))
+        dwg.add(dwg.tspan(ticktxt,
+                          insert=self.get_mm((xt, yt)),
+                          rotate=[angle]))
