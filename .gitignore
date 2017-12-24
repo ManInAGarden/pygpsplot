@@ -65,6 +65,7 @@ pyvenv.cfg
 share
 bin
 *.pyc
+plotter.svg
 
 
 

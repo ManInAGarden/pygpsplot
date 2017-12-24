@@ -183,9 +183,11 @@ class PlotterPrinter:
             canv.create_line(sx, sy, ex, ey)
     
     def get_mm(self, fval):
-        """Eine Zahl als string mit angehaengter Einheit mm zurueckliefert
+        """Liefert eine Zahl oder einen Tupel mit zwei Zahlen als string bzw. als
+        Tupel von 2 strings
+        mit angehaengter Einheit "mm" zurück.
         """
-        if type(fval) is tuple:
+        if isinstance(fval, tuple):
             fst, sec = fval
             answ = (self.get_mm(fst), self.get_mm(sec))
         else:
@@ -229,13 +231,26 @@ class PlotterPrinter:
 
         #die langen waagerechten Striche auf den vollen Breitengraden
         for i in range(1, self.min):
-            self.__svg_plotline(dwg, tm, 0.0, self.breiten_m * i,
+            self.__svg_plotline(dwg, tm, 
+                                0.0, self.breiten_m * i,
                                 self.laengen_m * self.min, self.breiten_m * i)
             
         #die langen senkrechten Striche auf den vollen Längengraden
         for i in range(1, self.min):
             self.__svg_plotline(dwg, tm, self.laengen_m * i, 0.0,
                                 self.laengen_m * i, self.breiten_m * self.min)
+
+        #Die Kompassrose
+        self.__dvg_printrose(dwg, tm)
+
+        #cx = olx + (urx-olx)/2
+        #cy = oly + (ury-oly)/2
+        #self.print_hole(canv, cx, cy) #ein Loch in die Mitte
+        #und ein Loch in jede Ecke
+        #self.print_hole(canv, olx, oly)
+        #self.print_hole(canv, olx, ury)
+        #self.print_hole(canv, urx, oly)
+        #self.print_hole(canv, urx, ury)
 
         dwg.save()
 
@@ -275,8 +290,77 @@ class PlotterPrinter:
                              self.get_mm((ex, ey)),
                              stroke='black'))
 
-    def __svg_plotline(self, dwg, tm, x1, y1, x2, y2):
+    def __svg_plotline(self, dwg, tm, xs, ys, xe, ye):
+        """Eine Strecke zwischen zwei Punkten zeichnen
+        * dwg - Das Drawing Objekt für die zu zeichnenden Linie
+        * tm - Die Transformationsmatrix
+        * xs, ys - Der Startpunkt der Strecke
+        * xe, ye - Der Endpunkt der Strecke
+        """
+        x1, y1 = tm.transform(xs, ys)
+        x2, y2 = tm.transform(xe, ye)
+        dwg.add(dwg.line(self.get_mm((x1, y1)),
+                         self.get_mm((x2, y2)),
+                         stroke='black'))
         return
 
+    def __dvg_printrose(self, dwg, tm):
+        """Die Kompassrose darstellen auf einem canvas-Objekt
+        * dwg  -das Drawing-Objekt auf dem gezeichnet werden soll
+        * tm die Transformationsmatrix
+        """
+        radius = self.laengen_m * self.min * 0.7 / 2
+        xc = self.min / 2 * self.laengen_m
+        yc = self.min / 2 * self.breiten_m
+        tx1, ty1 = tm.transform(xc, yc)
+        dwg.add(dwg.circle(self.get_mm((tx1, ty1)), 
+                           self.get_mm(radius),
+                           fill='none',
+                           stroke='black'))
 
+        for i in range(0, 360, 5):
+            tl = 0.05
+            txt = ""
+            if i % 10 == 0:
+                tl = 0.1
+                txt = i
+
+            self.__dvg_printtick(dwg, tm, xc, yc, radius, i + self.miss, tl, txt)
+
+        #self.__dvg_print_rose_cross(dwg, tm, xc, yc, radius)
+
+    def __dvg_print_rose_cross(self, dwg, tm, xc, yc, radius):
+        """Das Kreuz in der Mitte der Kompassrose zeichnen
+        Das Kreuz besteht aus je einer Linie zwischen 0 und 180 sowie
+        einer zwischen 90 und 270 Grad
+        """
+        bogwink = (2 * math.pi * self.miss) / 360.0
+        parttm = TransformationMatrix.from_params_simple(xc, yc, 0.9*radius, bogwink)
+        myTm = TransformationMatrix.from_followed_trans(parttm, tm)
+        x1, y1 = myTm.transform(0.0, -1.0)
+        x2, y2 = myTm.transform(0.0, 1.0)
+        dwg.add(dwg.line(self.get_mm(x1, y1),
+                         self.get_mm(x2,y2),
+                         stroke='black'))
+        x1, y1 = myTm.transform(-1.0, 0.0)
+        x2, y2 = myTm.transform(1.0, 0.0)
+        dwg.add(dwg.line(self.get_mm(x1, y1),
+                         self.get_mm(x2,y2),
+                         stroke='black'))
+
+        x1, x2 = myTm.transform(0.0, -1.4)
+        #canv.create_text(x1, x2, text="N", angle=-self.miss, font=("Helvetika", "8", "bold"))
     
+    def __dvg_printtick(self, dwg, tm, xc, yc, radius, angle, tl, ticktxt):
+        """Einen Strich der Kompassrose mit angeschriebenr Gradzahl darstellen
+        """
+        bogwink = (2 * math.pi * angle) / 360.0
+        part_tm = TransformationMatrix.from_params_simple(xc, yc, radius, bogwink)
+        my_tm = TransformationMatrix.from_followed_trans(part_tm, tm)
+        x1, y1 = my_tm.transform(0.0, 1.0)
+        x2, y2 = my_tm.transform(0.0, 1.0+tl)
+        xt, yt = my_tm.transform(0.0, 1.0 + 1.8 * tl)
+        dwg.add(dwg.line(self.get_mm((x1, y1)),
+                         self.get_mm((x2, y2)), 
+                         stroke='black'))
+        #canv.create_text(xt, yt, text=ticktxt, angle = -angle, font=("Helvetika", "7", "bold"))

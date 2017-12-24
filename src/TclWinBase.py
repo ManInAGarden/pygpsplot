@@ -148,10 +148,11 @@ class TclWinBase(tki.Frame):
         if width:
             lst.config(width=width)
 
-
         return lst
 
     def getvar(self, defval):
+        """gets a new tkinter variable to be used fir binding to entry widgets
+        """
         t = type(defval)
 
         if t == str:
@@ -170,6 +171,8 @@ class TclWinBase(tki.Frame):
 
 
 class ValidateDoubleEntry():
+    """Special entry widget for editing of double numbers
+    """
     def __init__(self, parent, **options):
         validate_number_cmd = parent.register(self.validate_number)
         self.entry = tki.Entry(parent,
@@ -194,6 +197,8 @@ class ValidateDoubleEntry():
 
 
 class ValidateIntegerEntry():
+    """special entry type widget for editing integer values
+    """
     def __init__(self, parent, **options):
         validate_number_cmd = parent.register(self.validate_number)
         self.entry = tki.Entry(parent,
