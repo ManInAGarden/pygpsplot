@@ -357,18 +357,21 @@ class PlotterPrinter:
         #canv.create_text(x1, x2, text="N", angle=-self.miss, font=("Helvetika", "8", "bold"))
     
     def __dvg_printtick(self, dwg, tm, xc, yc, radius, angle, tl, ticktxt):
-        """Einen Strich der Kompassrose mit angeschriebenr Gradzahl darstellen
+        """Einen Strich der Kompassrose mit angeschriebener Gradzahl darstellen
         """
-        bogwink = -(2 * math.pi * angle) / 360.0
+        bogwink = (2 * math.pi * angle) / 360.0
         part_tm = TransformationMatrix.from_params_simple(xc, yc, radius, bogwink)
         my_tm = TransformationMatrix.from_followed_trans(part_tm, tm)
-        x1, y1 = my_tm.transform(0.0, 1.0)
-        x2, y2 = my_tm.transform(0.0, 1.0+tl)
-        xt, yt = my_tm.transform(0.0, 1.0 + 1.8 * tl)
+        x1, y1 = my_tm.transform(0.0, -1.0)
+        x2, y2 = my_tm.transform(0.0, -1.0-tl)
+        xt, yt = my_tm.transform(0.0, -1.0 - 1.8 * tl)
         dwg.add(dwg.line(self.get_mm((x1, y1)),
-                         self.get_mm((x2, y2)), 
+                         self.get_mm((x2, y2)),
                          stroke='black'))
         #canv.create_text(xt, yt, text=ticktxt, angle = -angle, font=("Helvetika", "7", "bold"))
-        dwg.add(dwg.tspan(ticktxt,
-                          insert=self.get_mm((xt, yt)),
-                          rotate=[angle]))
+        tctup = self.get_mm((xt, yt))
+        dwg.add(dwg.text(ticktxt,
+                          insert=tctup,
+                          text_anchor='middle',
+                          transform='rotate({0},"{1}","{2}")'.format(angle, tctup[0], tctup[1])
+                          ))
