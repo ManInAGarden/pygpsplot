@@ -198,7 +198,7 @@ class PlotterPrinter:
     def get_deg(self, angle):
         """Liefert eine Zahl als string zurück und stellt die Einheit deg dahinter
         für die Nutzung mit svg Bogenmasswinkeln"""
-        answ = '{0}deg'.format(angle)
+        return '{0}deg'.format(angle)
 
     def produce_svg(self):
         """Gibt einen string zurück der den Plotter mit den eingestellten Parametern im svg-Format
@@ -363,18 +363,18 @@ class PlotterPrinter:
         bogwink = (2 * math.pi * angle) / 360.0
         part_tm = TransformationMatrix.from_params_simple(xc, yc, radius, bogwink)
         my_tm = TransformationMatrix.from_followed_trans(part_tm, tm)
-        x1, y1 = my_tm.transform(0.0, -1.0)
-        x2, y2 = my_tm.transform(0.0, -1.0-tl)
+        x1, y1 = my_tm.transform(0.0, 1.0)
+        x2, y2 = my_tm.transform(0.0, 1.0+tl)
         dwg.add(dwg.line(self.get_mm((x1, y1)),
                          self.get_mm((x2, y2)),
                          stroke='black'))
-        self.__svg_print_rot_txt(dwg, my_tm, ticktxt, 0.0, -1.0 - 1.8*tl, angle)
+        self.__svg_print_rot_txt(dwg, my_tm, ticktxt, 0.0, 1.0 + 1.8*tl, angle)
         
     def __svg_print_rot_txt(self, paro, tm, txt, xt, yt, angle):
         txts = "{0:03d}".format(txt)
         for i in range(0, len(txts)):
             c = txts[i]
-            xl, yl = tm.transform(xt +  (i-1)*0.4, yt)
+            xl, yl = tm.transform(xt + (i-1)*0.4, yt)
             paro.add(paro.text(c,
                                insert=self.get_mm((xl, yl)),
                                text_anchor='middle',
