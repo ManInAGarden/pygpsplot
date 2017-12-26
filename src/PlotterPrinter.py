@@ -330,7 +330,8 @@ class PlotterPrinter:
                 tl = 0.1
                 txt = i
 
-            self.__dvg_printtick(dwg, tm, xc, yc, radius, i + self.miss, tl, txt)
+            if(txt != ''):
+                self.__dvg_printtick(dwg, tm, xc, yc, radius, i + self.miss, tl, txt)
 
         #self.__dvg_print_rose_cross(dwg, tm, xc, yc, radius)
 
@@ -364,14 +365,18 @@ class PlotterPrinter:
         my_tm = TransformationMatrix.from_followed_trans(part_tm, tm)
         x1, y1 = my_tm.transform(0.0, -1.0)
         x2, y2 = my_tm.transform(0.0, -1.0-tl)
-        xt, yt = my_tm.transform(0.0, -1.0 - 1.8 * tl)
         dwg.add(dwg.line(self.get_mm((x1, y1)),
                          self.get_mm((x2, y2)),
                          stroke='black'))
-        #canv.create_text(xt, yt, text=ticktxt, angle = -angle, font=("Helvetika", "7", "bold"))
-        tctup = self.get_mm((xt, yt))
-        dwg.add(dwg.text(ticktxt,
-                          insert=tctup,
-                          text_anchor='middle',
-                          transform='rotate({0},"{1}","{2}")'.format(angle, tctup[0], tctup[1])
-                          ))
+        self.__svg_print_rot_txt(dwg, my_tm, ticktxt, 0.0, -1.0 - 1.8*tl, angle)
+        
+    def __svg_print_rot_txt(self, paro, tm, txt, xt, yt, angle):
+        txts = "{0:03d}".format(txt)
+        for i in range(0, len(txts)):
+            c = txts[i]
+            xl, yl = tm.transform(xt +  (i-1)*0.4, yt)
+            paro.add(paro.text(c,
+                               insert=self.get_mm((xl, yl)),
+                               text_anchor='middle',
+                               rotate=[angle]
+                               ))
