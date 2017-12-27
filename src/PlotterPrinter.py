@@ -363,14 +363,25 @@ class PlotterPrinter:
         bogwink = (2 * math.pi * angle) / 360.0
         part_tm = TransformationMatrix.from_params_simple(xc, yc, radius, bogwink)
         my_tm = TransformationMatrix.from_followed_trans(part_tm, tm)
-        x1, y1 = my_tm.transform(0.0, 1.0)
-        x2, y2 = my_tm.transform(0.0, 1.0+tl)
+        #3.543307 user units sind 1mm. svg-Transformationen ignorieren Einheiten vollständig, also müssen wir das tun.
+        part_tm2 = TransformationMatrix.from_params_simple(3.543307*xc, 3.543307*yc, radius, bogwink)
+        my_tm2 = TransformationMatrix.from_followed_trans(part_tm2, tm)
+        x1, y1 = my_tm.transform(0.0, -1.0)
+        x2, y2 = my_tm.transform(0.0, -1.0 - tl)
         dwg.add(dwg.line(self.get_mm((x1, y1)),
                          self.get_mm((x2, y2)),
                          stroke='black'))
-        self.__svg_print_rot_txt(dwg, my_tm, ticktxt, 0.0, 1.0 + 1.8*tl, angle)
+        self.__svg_print_rot_angletxt(dwg, my_tm2, angle, 0.0, -1.0 -1.5*tl)
         
-    def __svg_print_rot_txt(self, paro, tm, txt, xt, yt, angle):
+    def __svg_print_rot_angletxt(self, paro, tm, angle, xt, yt):
+        atxt = "{0:03.0f}".format(angle)
+        dtxt = paro.text(atxt,
+                         insert=self.get_mm((xt, yt)),
+                         font_size="0.08mm",
+                         transform=tm.get_svg_str())
+        paro.add(dtxt)
+
+    def __svg_print_rot_txt_BACKUP(self, paro, tm, txt, xt, yt, angle):
         txts = "{0:03d}".format(txt)
         for i in range(0, len(txts)):
             c = txts[i]

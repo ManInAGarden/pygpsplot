@@ -28,6 +28,16 @@ class TransformationMatrix():
         res.transmat =  tsmat * rotmat
         return res
 
+    def get_svg_str(self):
+        answ = "matrix({:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f})".format(
+            self.transmat.A[0,0],
+            self.transmat.A[1,0],
+            self.transmat.A[0,1],
+            self.transmat.A[1,1],
+            self.transmat.A[0,2],
+            self.transmat.A[1,2])
+        return answ
+
     
     @classmethod
     def from_trans_mat(cls, other):
