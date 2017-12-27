@@ -5,6 +5,8 @@ from tkinter import *
 import svgwrite as svg
 from TransformationMatrix import *
 
+MM_FACT = 3.543307
+
 class PlotterPrinter:
     """Klasse mit der ein Plotter auf der Bildschirm dargestellt aber auch als svg-File exportiert
     kann
@@ -70,14 +72,17 @@ class PlotterPrinter:
 
         cx = olx + (urx-olx)/2
         cy = oly + (ury-oly)/2
-        self.print_hole(canv, cx, cy) #ein Loch in die Mitte
+        self.__print_hole(canv, cx, cy) #ein Loch in die Mitte
         #und ein Loch in jede Ecke
-        self.print_hole(canv, olx, oly)
-        self.print_hole(canv, olx, ury)
-        self.print_hole(canv, urx, oly)
-        self.print_hole(canv, urx, ury)
+        self.__print_hole(canv, olx, oly)
+        self.__print_hole(canv, olx, ury)
+        self.__print_hole(canv, urx, oly)
+        self.__print_hole(canv, urx, ury)
 
-    def print_hole(self, canv, xc, yc):
+        self.__print_scale(canv, tm, pad + (urx-olx)/2, ury + 20)
+        self.__print_logo_and_else(canv, tm, self.min * self.laengen_m/2, self.min * self.breiten_m * 0.85)
+
+    def __print_hole(self, canv, xc, yc):
         """Ein Loch mit Zentrum an der übergebenen Stelle auf einen canvas malen
         """
         rad = 3.0
@@ -97,17 +102,18 @@ class PlotterPrinter:
 
         for i in range(0, 360, 5):
             tl = 0.05
-            txt = ""
+            doit = False
             if i % 10 == 0:
                 tl = 0.1
-                txt = i
+                doit = True
+            
+            if doit:
+                self.__printtick(canv, tm, xc, yc, radius, i + self.miss, tl, i)
 
-            self.__printtick(canv, tm, xc, yc, radius, i + self.miss, tl, txt)
+        self.__print_rose_cross(canv, tm, xc, yc, radius)
 
-        self.print_rose_cross(canv, tm, xc, yc, radius)
-
-    def print_rose_cross(self, canv, tm, xc, yc, radius):
-        """Das Kreus in der Mitte der Kompassrose zeichnen
+    def __print_rose_cross(self, canv, tm, xc, yc, radius):
+        """Das Kreuz in der Mitte der Kompassrose zeichnen
         Das Kreuz besteht aus je einer Linie zwischen 0 und 180 sowie
         einer zwischen 90 und 270 Grad
         """
@@ -124,7 +130,7 @@ class PlotterPrinter:
         x1, x2 = myTm.transform(0.0, -1.4)
         canv.create_text(x1, x2, text="N", angle=-self.miss, font=("Helvetika", "8", "bold"))
     
-    def __printtick(self, canv, tm, xc, yc, radius, angle, tl, ticktxt):
+    def __printtick(self, canv, tm, xc, yc, radius, angle, tl, pangle):
         """Einen Strich der Kompassrose mit angeschriebenr Gradzahl darstellen
         """
         bogwink = (2 * math.pi * angle) / 360.0
@@ -134,7 +140,8 @@ class PlotterPrinter:
         x2, y2 = my_tm.transform(0.0, -1.0-tl)
         xt, yt = my_tm.transform(0.0, -1.0 - 1.8 * tl)
         canv.create_line(x1, y1, x2, y2)
-        canv.create_text(xt, yt, text=ticktxt, angle = -angle, font=("Helvetika", "7", "bold"))
+        atxt = "{0:03.0f}".format(pangle)
+        canv.create_text(xt, yt, text=atxt, angle = -angle, font=("Helvetika", "7", "bold"))
 
     def __plotline(self, canv, tm, xs, ys, xe, ye):
         """Eine Strecke zwischen zwei Punkten zeichnen
@@ -204,19 +211,18 @@ class PlotterPrinter:
         """Gibt einen string zurück der den Plotter mit den eingestellten Parametern im svg-Format
         enthält.
         """
+        pad = 10 #1cm Rand an allen Seiten        
         dwg = svg.Drawing('plotter.svg',
-                          height=self.get_mm(self.min * self.laengen_m),
-                          width=self.get_mm(self.min * self.breiten_m))
-        pad = 10
-
+                          height=self.min * self.laengen_m + 2*pad,
+                          width=self.min * self.breiten_m + 2*pad)
         #meine Transformationsmatrix
-        tm = TransformationMatrix.from_params_simple(pad, pad, 1.0, 0)
+        tm = TransformationMatrix.from_params_simple(pad, pad, MM_FACT, 0)
         
         #Der Rahmen
         olx, oly = tm.transform(0.0, 0.0)
         urx, ury = tm.transform(self.min * self.laengen_m, self.min * self.breiten_m)
-        dwg.add(dwg.rect(self.get_mm((olx, oly)),
-                         self.get_mm((urx-olx, ury-oly)),
+        dwg.add(dwg.rect((olx, oly),
+                         (urx-olx, ury-oly),
                          fill='white',
                          stroke='black'))
 
@@ -246,16 +252,16 @@ class PlotterPrinter:
                                 self.laengen_m * i, self.breiten_m * self.min)
 
         #Die Kompassrose
-        self.__dvg_printrose(dwg, tm)
+        self.__svg_printrose(dwg, tm)
 
-        #cx = olx + (urx-olx)/2
-        #cy = oly + (ury-oly)/2
-        #self.print_hole(canv, cx, cy) #ein Loch in die Mitte
+        cx = olx + (urx-olx)/2
+        cy = oly + (ury-oly)/2
+        self.__svg_print_hole(dwg, cx, cy) #ein Loch in die Mitte
         #und ein Loch in jede Ecke
-        #self.print_hole(canv, olx, oly)
-        #self.print_hole(canv, olx, ury)
-        #self.print_hole(canv, urx, oly)
-        #self.print_hole(canv, urx, ury)
+        self.__svg_print_hole(dwg, olx, oly)
+        self.__svg_print_hole(dwg, olx, ury)
+        self.__svg_print_hole(dwg, urx, oly)
+        self.__svg_print_hole(dwg, urx, ury)
 
         dwg.save()
 
@@ -291,8 +297,8 @@ class PlotterPrinter:
             x = 0.1 * i
             sx, sy = my_tm.transform(x, 0.0)
             ex, ey = my_tm.transform(x, y)
-            dwg.add(dwg.line(self.get_mm((sx, sy)),
-                             self.get_mm((ex, ey)),
+            dwg.add(dwg.line((sx, sy),
+                             (ex, ey),
                              stroke='black'))
 
     def __svg_plotline(self, dwg, tm, xs, ys, xe, ye):
@@ -304,12 +310,12 @@ class PlotterPrinter:
         """
         x1, y1 = tm.transform(xs, ys)
         x2, y2 = tm.transform(xe, ye)
-        dwg.add(dwg.line(self.get_mm((x1, y1)),
-                         self.get_mm((x2, y2)),
+        dwg.add(dwg.line((x1, y1),
+                         (x2, y2),
                          stroke='black'))
         return
 
-    def __dvg_printrose(self, dwg, tm):
+    def __svg_printrose(self, dwg, tm):
         """Die Kompassrose darstellen auf einem canvas-Objekt
         * dwg  -das Drawing-Objekt auf dem gezeichnet werden soll
         * tm die Transformationsmatrix
@@ -318,24 +324,24 @@ class PlotterPrinter:
         xc = self.min / 2 * self.laengen_m
         yc = self.min / 2 * self.breiten_m
         tx1, ty1 = tm.transform(xc, yc)
-        dwg.add(dwg.circle(self.get_mm((tx1, ty1)), 
-                           self.get_mm(radius),
+        dwg.add(dwg.circle((tx1, ty1), 
+                           radius * MM_FACT,
                            fill='none',
                            stroke='black'))
 
         for i in range(0, 360, 5):
             tl = 0.05
-            txt = ""
+            doit = False
             if i % 10 == 0:
                 tl = 0.1
-                txt = i
+                doit = True
 
-            if(txt != ''):
-                self.__dvg_printtick(dwg, tm, xc, yc, radius, i + self.miss, tl, txt)
+            if doit:
+                self.__svg_printtick(dwg, tm, xc, yc, radius, i + self.miss, tl, i)
 
-        #self.__dvg_print_rose_cross(dwg, tm, xc, yc, radius)
+        self.__svg_print_rose_cross(dwg, tm, xc, yc, radius)
 
-    def __dvg_print_rose_cross(self, dwg, tm, xc, yc, radius):
+    def __svg_print_rose_cross(self, dwg, tm, xc, yc, radius):
         """Das Kreuz in der Mitte der Kompassrose zeichnen
         Das Kreuz besteht aus je einer Linie zwischen 0 und 180 sowie
         einer zwischen 90 und 270 Grad
@@ -345,49 +351,74 @@ class PlotterPrinter:
         myTm = TransformationMatrix.from_followed_trans(parttm, tm)
         x1, y1 = myTm.transform(0.0, -1.0)
         x2, y2 = myTm.transform(0.0, 1.0)
-        dwg.add(dwg.line(self.get_mm(x1, y1),
-                         self.get_mm(x2,y2),
+        dwg.add(dwg.line((x1, y1),
+                         (x2, y2),
                          stroke='black'))
         x1, y1 = myTm.transform(-1.0, 0.0)
         x2, y2 = myTm.transform(1.0, 0.0)
-        dwg.add(dwg.line(self.get_mm(x1, y1),
-                         self.get_mm(x2,y2),
+        dwg.add(dwg.line((x1, y1),
+                         (x2,y2),
                          stroke='black'))
 
-        x1, x2 = myTm.transform(0.0, -1.4)
-        #canv.create_text(x1, x2, text="N", angle=-self.miss, font=("Helvetika", "8", "bold"))
+        dwg.add(dwg.text("N",
+                         insert=(0.0, -1.4),
+                         font_size="0.09",
+                         text_anchor="middle",
+                         font_weight="bold",
+                         transform=myTm.get_svg_str()))
     
-    def __dvg_printtick(self, dwg, tm, xc, yc, radius, angle, tl, ticktxt):
+    def __svg_printtick(self, dwg, tm, xc, yc, radius, angle, tl, pangle):
         """Einen Strich der Kompassrose mit angeschriebener Gradzahl darstellen
         """
         bogwink = (2 * math.pi * angle) / 360.0
         part_tm = TransformationMatrix.from_params_simple(xc, yc, radius, bogwink)
         my_tm = TransformationMatrix.from_followed_trans(part_tm, tm)
-        #3.543307 user units sind 1mm. svg-Transformationen ignorieren Einheiten vollständig, also müssen wir das tun.
-        part_tm2 = TransformationMatrix.from_params_simple(3.543307*xc, 3.543307*yc, radius, bogwink)
-        my_tm2 = TransformationMatrix.from_followed_trans(part_tm2, tm)
         x1, y1 = my_tm.transform(0.0, -1.0)
         x2, y2 = my_tm.transform(0.0, -1.0 - tl)
-        dwg.add(dwg.line(self.get_mm((x1, y1)),
-                         self.get_mm((x2, y2)),
+        dwg.add(dwg.line((x1, y1),
+                         (x2, y2),
                          stroke='black'))
-        self.__svg_print_rot_angletxt(dwg, my_tm2, angle, 0.0, -1.0 -1.5*tl)
+        self.__svg_print_rot_angletxt(dwg, my_tm, angle, 0.0, -1.0 -1.2*tl, pangle)
         
-    def __svg_print_rot_angletxt(self, paro, tm, angle, xt, yt):
-        atxt = "{0:03.0f}".format(angle)
+    def __svg_print_rot_angletxt(self, paro, tm, angle, xt, yt, pangle):
+        atxt = "{0:03.0f}".format(pangle)
         dtxt = paro.text(atxt,
-                         insert=self.get_mm((xt, yt)),
-                         font_size="0.08mm",
+                         insert=(xt, yt),
+                         font_size="0.08",
+                         text_anchor="middle",
                          transform=tm.get_svg_str())
         paro.add(dtxt)
 
-    def __svg_print_rot_txt_BACKUP(self, paro, tm, txt, xt, yt, angle):
-        txts = "{0:03d}".format(txt)
-        for i in range(0, len(txts)):
-            c = txts[i]
-            xl, yl = tm.transform(xt + (i-1)*0.4, yt)
-            paro.add(paro.text(c,
-                               insert=self.get_mm((xl, yl)),
-                               text_anchor='middle',
-                               rotate=[angle]
-                               ))
+    def __svg_print_hole(self, dwg, xc, yc):
+        """Ein Loch mit Zentrum an der übergebenen Stelle in ein svg
+        objekt malen
+        """
+        rad = 2.0 * MM_FACT
+        dwg.add(dwg.circle((xc, yc), rad, fill="none", stroke="black"))
+
+    def __svg_print_scale(self, dwg, tm, x, y):
+        xt, yt = tm.transform(x, y)
+        x1, y1 = x-25, y
+        x2, y2 = x+25, y
+        dwg.add(dwg.line((x1,y1),(x2,y2), stroke="black"))
+        self.__svg_plotline(dwg, tm, x-50, y-2, x-50, y+2)
+        self.__svg_plotline(dwg, tm, x, y-2, x, y+2)        
+        self.__svg_plotline(dwg, tm, x+50, y-2, x+50, y+2)
+
+    def __print_scale(self, canv, tm, x, y):
+        x1, y1 = x-25, y
+        x2, y2 = x+25, y
+        canv.create_line(x1, y1, x2, y2)
+        canv.create_line(x1, y1-5, x1, y1+5)
+        canv.create_line(x2, y1-5, x2, y1+5)
+        canv.create_text(x, y-6, text="5cm", font=("Helvetika", "8", "bold"))
+
+    def __print_logo_and_else(self, canv, tm, x, y):
+        x1, y1 = tm.transform(x, y)
+        canv.create_text(x1, y1, text="Maßstab: 1:{}".format(self.mass), font=("Helvetika", "8", "bold"))
+        x1, y1 = tm.transform(x, y+5)
+        canv.create_text(x1, y1, text="{:0.0f}°N".format(self.breite), font=("Helvetika", "8", "bold"))
+        x1, y1 = tm.transform(x, y+10)
+        canv.create_text(x1, y1, text="Missweisung: {:0.1f}°".format(self.miss), font=("Helvetika", "8", "bold"))        
+        
+        
