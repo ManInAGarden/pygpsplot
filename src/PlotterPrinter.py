@@ -263,6 +263,8 @@ class PlotterPrinter:
         self.__svg_print_hole(dwg, urx, oly)
         self.__svg_print_hole(dwg, urx, ury)
 
+        self.__svg_print_scale(dwg, tm, cx, ury + 10)
+
         dwg.save()
 
     def __svg_canc_minute(self, dwg, tm, movx, movy, scale, angle):
@@ -397,13 +399,29 @@ class PlotterPrinter:
         dwg.add(dwg.circle((xc, yc), rad, fill="none", stroke="black"))
 
     def __svg_print_scale(self, dwg, tm, x, y):
-        xt, yt = tm.transform(x, y)
         x1, y1 = x-25, y
         x2, y2 = x+25, y
-        dwg.add(dwg.line((x1,y1),(x2,y2), stroke="black"))
-        self.__svg_plotline(dwg, tm, x-50, y-2, x-50, y+2)
-        self.__svg_plotline(dwg, tm, x, y-2, x, y+2)        
-        self.__svg_plotline(dwg, tm, x+50, y-2, x+50, y+2)
+        dwg.add(dwg.line(self.get_mm((x1,y1)), self.get_mm((x2,y2)), stroke="black"))
+        dwg.add(dwg.line(self.get_mm((x1, y1-2)),self.get_mm((x1, y1+2)), stroke="black"))
+        dwg.add(dwg.line(self.get_mm((x2, y1-2)),self.get_mm((x2, y1+2)), stroke="black"))
+        dwg.add(dwg.text("5cm",
+                         insert=(x, y-1),
+                         font_size="9",
+                         text_anchor="middle"
+                ))
+
+    def __svg_print_logo_and_else(self, canv, tm, x, y):
+        lw = 5 * 30000 / self.mass
+        #halfwidth = 14 * 30000 / self.mass
+        x1, y1 = tm.transform(x, y)
+        #bdx1, bdy1 = tm.transform(x - halfwidth, y - 5)
+        #bdx2, bdy2 = tm.transform(x + halfwidth, y + 3*lw)
+        #canv.create_rectangle(bdx1, bdy1, bdx2, bdy2, fill="white", outline='white')
+        canv.create_text(x1, y1, text="Maßstab: 1:{}".format(self.mass), font=("Helvetika", "7", "bold"))
+        x1, y1 = tm.transform(x, y+lw)
+        canv.create_text(x1, y1, text="{:0.0f}°N".format(self.breite), font=("Helvetika", "7", "bold"))
+        x1, y1 = tm.transform(x, y+2*lw)
+        canv.create_text(x1, y1, text="Missweisung: {:0.1f}°".format(self.miss), font=("Helvetika", "7", "bold")) 
 
     def __print_scale(self, canv, tm, x, y):
         x1, y1 = x-25, y
@@ -414,11 +432,16 @@ class PlotterPrinter:
         canv.create_text(x, y-6, text="5cm", font=("Helvetika", "8", "bold"))
 
     def __print_logo_and_else(self, canv, tm, x, y):
+        lw = 5 * 30000 / self.mass
+        #halfwidth = 14 * 30000 / self.mass
         x1, y1 = tm.transform(x, y)
-        canv.create_text(x1, y1, text="Maßstab: 1:{}".format(self.mass), font=("Helvetika", "8", "bold"))
-        x1, y1 = tm.transform(x, y+5)
-        canv.create_text(x1, y1, text="{:0.0f}°N".format(self.breite), font=("Helvetika", "8", "bold"))
-        x1, y1 = tm.transform(x, y+10)
-        canv.create_text(x1, y1, text="Missweisung: {:0.1f}°".format(self.miss), font=("Helvetika", "8", "bold"))        
+        #bdx1, bdy1 = tm.transform(x - halfwidth, y - 5)
+        #bdx2, bdy2 = tm.transform(x + halfwidth, y + 3*lw)
+        #canv.create_rectangle(bdx1, bdy1, bdx2, bdy2, fill="white", outline='white')
+        canv.create_text(x1, y1, text="Maßstab: 1:{}".format(self.mass), font=("Helvetika", "7", "bold"))
+        x1, y1 = tm.transform(x, y+lw)
+        canv.create_text(x1, y1, text="{:0.0f}°N".format(self.breite), font=("Helvetika", "7", "bold"))
+        x1, y1 = tm.transform(x, y+2*lw)
+        canv.create_text(x1, y1, text="Missweisung: {:0.1f}°".format(self.miss), font=("Helvetika", "7", "bold"))        
         
         
