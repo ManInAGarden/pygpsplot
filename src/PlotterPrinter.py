@@ -212,12 +212,11 @@ class PlotterPrinter:
         enthält.
         """
         pad = 10 #1cm Rand an allen Seiten        
-        dwg = svg.Drawing('plotter.svg',
-                          height=self.min * self.laengen_m + 2*pad,
-                          width=self.min * self.breiten_m + 2*pad)
+       
         #meine Transformationsmatrix
         tm = TransformationMatrix.from_params_simple(pad, pad, MM_FACT, 0)
-        
+        wh = (self.min * self.laengen_m + 2*pad, self.min * self.breiten_m + 2*pad)
+        dwg = svg.Drawing('plotter.svg', size=self.get_mm(wh))
         #Der Rahmen
         olx, oly = tm.transform(0.0, 0.0)
         urx, ury = tm.transform(self.min * self.laengen_m, self.min * self.breiten_m)
@@ -263,7 +262,8 @@ class PlotterPrinter:
         self.__svg_print_hole(dwg, urx, oly)
         self.__svg_print_hole(dwg, urx, ury)
 
-        self.__svg_print_scale(dwg, tm, cx, ury + 10)
+        self.__svg_print_scale(dwg)
+        self.__svg_print_logo_and_else(dwg)
 
         dwg.save()
 
@@ -398,30 +398,38 @@ class PlotterPrinter:
         rad = 2.0 * MM_FACT
         dwg.add(dwg.circle((xc, yc), rad, fill="none", stroke="black"))
 
-    def __svg_print_scale(self, dwg, tm, x, y):
-        x1, y1 = x-25, y
-        x2, y2 = x+25, y
-        dwg.add(dwg.line(self.get_mm((x1,y1)), self.get_mm((x2,y2)), stroke="black"))
+    def __svg_print_scale(self, dwg):
+        """Die Skala zur Kontrolle der Druckgroesse hinzufuegen
+        """
+        uy = self.min * self.breiten_m + 8
+        xc = (self.min * self.laengen_m + 10) / 2.0
+        x1, y1 = xc - 25, uy + 2
+        x2, y2 = xc + 25, uy + 2
+        dwg.add(dwg.line(self.get_mm((x1, y1)), self.get_mm((x2, y2)), stroke="black"))
         dwg.add(dwg.line(self.get_mm((x1, y1-2)),self.get_mm((x1, y1+2)), stroke="black"))
         dwg.add(dwg.line(self.get_mm((x2, y1-2)),self.get_mm((x2, y1+2)), stroke="black"))
         dwg.add(dwg.text("5cm",
-                         insert=(x, y-1),
+                         insert=(xc*MM_FACT, uy*MM_FACT),
                          font_size="9",
                          text_anchor="middle"
                 ))
 
-    def __svg_print_logo_and_else(self, canv, tm, x, y):
-        lw = 5 * 30000 / self.mass
-        #halfwidth = 14 * 30000 / self.mass
-        x1, y1 = tm.transform(x, y)
-        #bdx1, bdy1 = tm.transform(x - halfwidth, y - 5)
-        #bdx2, bdy2 = tm.transform(x + halfwidth, y + 3*lw)
-        #canv.create_rectangle(bdx1, bdy1, bdx2, bdy2, fill="white", outline='white')
-        canv.create_text(x1, y1, text="Maßstab: 1:{}".format(self.mass), font=("Helvetika", "7", "bold"))
-        x1, y1 = tm.transform(x, y+lw)
-        canv.create_text(x1, y1, text="{:0.0f}°N".format(self.breite), font=("Helvetika", "7", "bold"))
-        x1, y1 = tm.transform(x, y+2*lw)
-        canv.create_text(x1, y1, text="Missweisung: {:0.1f}°".format(self.miss), font=("Helvetika", "7", "bold")) 
+    def __svg_print_logo_and_else(self, dwg):
+        lw = 4
+        y = (self.min * self.breiten_m) * 0.8
+        x = (self.min * self.laengen_m + 10) / 2.0
+        dwg.add(dwg.text("Maßstab: 1:{}".format(self.mass), 
+                         insert=self.get_mm((x, y+lw)), 
+                         font_size="3mm",
+                         text_anchor="middle"))
+        dwg.add(dwg.text("{:0.0f}°N".format(self.breite),
+                         insert=self.get_mm((x, y+2*lw)),
+                         font_size="3mm",
+                         text_anchor="middle"))
+        dwg.add(dwg.text("Missweisung: {:0.1f}°".format(self.miss),
+                         insert=self.get_mm((x, y+3*lw)),
+                         font_size="3mm",
+                         text_anchor="middle"))
 
     def __print_scale(self, canv, tm, x, y):
         x1, y1 = x-25, y
