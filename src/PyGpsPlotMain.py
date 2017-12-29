@@ -31,12 +31,12 @@ class PyGpsPlotMain(TclWinBase):
         self.massstab = self.make_int_entry(erow=row, lrow=row,
                                             caption="Maßstab",
                                             textvariable=self.massstab_tv,
-                                            width=6)
+                                            width=7)
         row += 1
         self.missweisung = self.make_double_entry(erow=row, lrow=row,
                                                   caption="Missweisung /°",
                                                   textvariable=self.missweisung_tv,
-                                                  width=3)
+                                                  width=5)
         row += 1
         self.create_plotter_bu = self.makebutton(erow=row,
                                                  caption="Anzeigen",

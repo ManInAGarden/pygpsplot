@@ -16,7 +16,7 @@ class PlotterPrinter:
         self.breite = breitengrad
         self.miss = missweisung
         self.min = minuten
-        self.breiten_m = (1852 * 1000) / self.mass
+        self.breiten_m = (1852.216 * 1000) / self.mass
         self.laengen_m = self.breiten_m * math.cos(self.breite/180*math.pi)
         self.printed = False
 
