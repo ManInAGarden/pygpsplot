@@ -409,6 +409,7 @@ class PlotterPrinter:
         dwg.add(dwg.line(self.get_mm((x1, y1-2)),self.get_mm((x1, y1+2)), stroke="black"))
         dwg.add(dwg.line(self.get_mm((x2, y1-2)),self.get_mm((x2, y1+2)), stroke="black"))
         dwg.add(dwg.text("5cm",
+               
                          insert=(xc*MM_FACT, uy*MM_FACT),
                          font_size="9",
                          text_anchor="middle"
