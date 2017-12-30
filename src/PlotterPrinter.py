@@ -1,6 +1,7 @@
 """Plotter Printer Module, stellt im wesentlichen die gleichnamige Klasse bereit
 """
 import math
+import os
 from tkinter import *
 import svgwrite as svg
 from TransformationMatrix import *
@@ -264,7 +265,6 @@ class PlotterPrinter:
 
         self.__svg_print_scale(dwg)
         self.__svg_print_logo_and_else(dwg)
-
         dwg.save()
 
     def __svg_canc_minute(self, dwg, tm, movx, movy, scale, angle):
@@ -415,21 +415,40 @@ class PlotterPrinter:
                 ))
 
     def __svg_print_logo_and_else(self, dwg):
-        lw = 4
+        lw = 4 * (30000 / self.mass)
+        th = 3.8 * (30000 / self.mass)
         y = (self.min * self.breiten_m) * 0.8
-        x = (self.min * self.laengen_m + 10) / 2.0
+        x = (self.min * self.laengen_m) / 2.0
         dwg.add(dwg.text("Maßstab: 1:{}".format(self.mass), 
                          insert=self.get_mm((x, y+lw)), 
-                         font_size="3mm",
+                         font_size=self.get_mm(th),
                          text_anchor="middle"))
         dwg.add(dwg.text("{:0.0f}°N".format(self.breite),
                          insert=self.get_mm((x, y+2*lw)),
-                         font_size="3mm",
+                         font_size=self.get_mm(th),
                          text_anchor="middle"))
         dwg.add(dwg.text("Missweisung: {:0.1f}°".format(self.miss),
                          insert=self.get_mm((x, y+3*lw)),
-                         font_size="3mm",
+                         font_size=self.get_mm(th),
                          text_anchor="middle"))
+        picscale = 0.333 * (30000 / self.mass) / MM_FACT
+        picwidth = 248 * picscale
+        picheight = 150 * picscale
+        y = self.min * self.breiten_m * 0.15 - picheight/2
+        self.__svg_add_image(dwg, "Wimpelh150.jpg",
+                             x -  picwidth/2, y,
+                             "{}mm".format(picwidth), "{}mm".format(picheight))
+        dwg.add(dwg.text("Essener-Faltboot-Fahrer e.V.",
+                         insert=self.get_mm((x, y + picheight + lw )),
+                         font_size=self.get_mm(th),
+                         text_anchor="middle"))
+
+    def __svg_add_image(self, dwg, filename, x, y, width, height):
+        absp = os.path.abspath(filename)
+        imgurl="file:///{}".format(absp)
+        img = dwg.image(href=imgurl, insert=self.get_mm((x, y)), size=(width, height))
+        img.fit()
+        dwg.add(img)
 
     def __print_scale(self, canv, tm, x, y):
         x1, y1 = x-25, y
