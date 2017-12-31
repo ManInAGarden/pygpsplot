@@ -1,12 +1,14 @@
 """Hauptmodul des GPS-Plotters
+Dieses Modul in Python starten!
 """
 #! /usr/bin/python3
-#main prog with tcl gui
+# main prog with tcl gui
 import tkinter as tki
 #from tkinter.filedialog import askdirectory
 from tclwinbase import *
 from tkiplotterprinter import *
 from svgplotterprinter import *
+
 
 class PyGpsPlotMain(TclWinBase):
     """Main Window für PyGpsPlotter
@@ -41,27 +43,27 @@ class PyGpsPlotMain(TclWinBase):
         row += 1
         self.create_plotter_bu = self.makebutton(erow=row,
                                                  caption="Anzeigen",
-                                                 sticky=tki.W+tki.S,
+                                                 sticky=tki.W + tki.S,
                                                  cmd=self.view_plotter)
         self.create_svg_bu = self.makebutton(erow=row, ecol=1,
                                              caption='SVG erzeugen',
-                                             sticky=tki.W+tki.S,
+                                             sticky=tki.W + tki.S,
                                              cmd=self.create_svg)
-        self.canvas = self.makecanvas(ecol=2, rspan=row+1,
+        self.canvas = self.makecanvas(ecol=2, rspan=row + 1,
                                       width=400, height=600,
                                       bg="white")
         self.canvas.bind("<Configure>", self.resize_canvas)
-        
+
         for i in range(0, row):
             self.rowconfigure(i, weight=0, pad=5)
 
         self.rowconfigure(row, weight=1, pad=5)
-        
+
         self.columnconfigure(0, weight=0, pad=5)
         self.columnconfigure(1, weight=0, pad=5)
         self.columnconfigure(2, weight=1, pad=5)
 
-        #end in the end pack ...
+        # end in the end pack ...
         self.pack(fill=tki.BOTH, expand=tki.YES)
 
     def resize_canvas(self, event):
@@ -102,6 +104,7 @@ class PyGpsPlotMain(TclWinBase):
         br = self.breitengrad_tv.get()
         plotter = SvgPlotterPrinter(br, m, mw, bm)
         plotter.print("plotter.svg")
+
 
 if __name__ == '__main__':
     MW = PyGpsPlotMain("PyGpsPlot")

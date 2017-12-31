@@ -4,6 +4,9 @@
 from plotterprinter import *
 from transformationmatrix import *
 
+# Skalierungsfaktor zwischen Pixel und mm im SVG
+MM_FACT = 3.543307
+
 
 class SvgPlotterPrinter(PlotterPrinter):
     """Der Plotter Printer mit Ausgabe als SVG
@@ -12,52 +15,54 @@ class SvgPlotterPrinter(PlotterPrinter):
     def print(self, filename):
         """Produziert den Plotter im SVG-Format in die genannte Datei
         """
-        pad = 10 #1cm Rand an allen Seiten        
-       
-        #meine Transformationsmatrix
+        pad = 10  # 1cm Rand an allen Seiten
+
+        # meine Transformationsmatrix
         tm = TransformationMatrix.from_params_simple(pad, pad, MM_FACT, 0)
-        wh = (self.min * self.laengen_m + 2*pad, self.min * self.breiten_m + 2*pad)
+        wh = (self.min * self.laengen_m + 2 * pad,
+              self.min * self.breiten_m + 2 * pad)
         dwg = svg.Drawing(filename, size=self.get_mm(wh))
-        #Der Rahmen
+        # Der Rahmen
         olx, oly = tm.transform(0.0, 0.0)
-        urx, ury = tm.transform(self.min * self.laengen_m, self.min * self.breiten_m)
+        urx, ury = tm.transform(self.min * self.laengen_m,
+                                self.min * self.breiten_m)
         dwg.add(dwg.rect((olx, oly),
-                         (urx-olx, ury-oly),
+                         (urx - olx, ury - oly),
                          fill='white',
                          stroke='black'))
 
-         #Laengenskala
+        # Laengenskala
         for i in range(0, self.min):
             self.__canc_minute(dwg, tm, self.laengen_m * i,
-                                   0.0, self.laengen_m, 0.0) #oben
-            self.__canc_minute(dwg, tm, self.laengen_m * (i+1),
-                                   self.breiten_m * self.min, self.laengen_m, math.pi) #unten
+                               0.0, self.laengen_m, 0.0)  # oben
+            self.__canc_minute(dwg, tm, self.laengen_m * (i + 1),
+                               self.breiten_m * self.min, self.laengen_m, math.pi)  # unten
 
-        #Breitenskala
+        # Breitenskala
         for i in range(0, self.min):
             self.__canc_minute(dwg, tm, self.min * self.laengen_m, i * self.breiten_m,
-                                   self.breiten_m, math.pi/2) #links
+                               self.breiten_m, math.pi / 2)  # links
             self.__canc_minute(dwg, tm, 0.0, self.breiten_m * (i + 1),
-                                   self.breiten_m, 3/2*math.pi) #rechts
+                               self.breiten_m, 3 / 2 * math.pi)  # rechts
 
-        #die langen waagerechten Striche auf den vollen Breitengraden
+        # die langen waagerechten Striche auf den vollen Breitengraden
         for i in range(1, self.min):
-            self.__plotline(dwg, tm, 
-                                0.0, self.breiten_m * i,
-                                self.laengen_m * self.min, self.breiten_m * i)
-            
-        #die langen senkrechten Striche auf den vollen Längengraden
+            self.__plotline(dwg, tm,
+                            0.0, self.breiten_m * i,
+                            self.laengen_m * self.min, self.breiten_m * i)
+
+        # die langen senkrechten Striche auf den vollen Längengraden
         for i in range(1, self.min):
             self.__plotline(dwg, tm, self.laengen_m * i, 0.0,
-                                self.laengen_m * i, self.breiten_m * self.min)
+                            self.laengen_m * i, self.breiten_m * self.min)
 
-        #Die Kompassrose
+        # Die Kompassrose
         self.__printrose(dwg, tm)
 
-        cx = olx + (urx-olx)/2
-        cy = oly + (ury-oly)/2
-        self.__print_hole(dwg, cx, cy) #ein Loch in die Mitte
-        #und ein Loch in jede Ecke
+        cx = olx + (urx - olx) / 2
+        cy = oly + (ury - oly) / 2
+        self.__print_hole(dwg, cx, cy)  # ein Loch in die Mitte
+        # und ein Loch in jede Ecke
         self.__print_hole(dwg, olx, oly)
         self.__print_hole(dwg, olx, ury)
         self.__print_hole(dwg, urx, oly)
@@ -78,12 +83,13 @@ class SvgPlotterPrinter(PlotterPrinter):
         longl = 0.2
         shortl = 0.1
         midl = 0.15
-        
-        #Der lange Strich am Anfang
+
+        # Der lange Strich am Anfang
         x = 0.0
         y = longl
 
-        parttrans = TransformationMatrix.from_params_simple(movx, movy, scale, angle)      
+        parttrans = TransformationMatrix.from_params_simple(
+            movx, movy, scale, angle)
         my_tm = tm.from_followed_trans(parttrans, tm)
 
         for i in range(0, 11):
@@ -126,7 +132,7 @@ class SvgPlotterPrinter(PlotterPrinter):
         xc = self.min / 2 * self.laengen_m
         yc = self.min / 2 * self.breiten_m
         tx1, ty1 = tm.transform(xc, yc)
-        dwg.add(dwg.circle((tx1, ty1), 
+        dwg.add(dwg.circle((tx1, ty1),
                            radius * MM_FACT,
                            fill='none',
                            stroke='black'))
@@ -149,7 +155,8 @@ class SvgPlotterPrinter(PlotterPrinter):
         einer zwischen 90 und 270 Grad
         """
         bogwink = (2 * math.pi * self.miss) / 360.0
-        parttm = TransformationMatrix.from_params_simple(xc, yc, 0.9*radius, bogwink)
+        parttm = TransformationMatrix.from_params_simple(
+            xc, yc, 0.9 * radius, bogwink)
         myTm = TransformationMatrix.from_followed_trans(parttm, tm)
         x1, y1 = myTm.transform(0.0, -1.0)
         x2, y2 = myTm.transform(0.0, 1.0)
@@ -159,7 +166,7 @@ class SvgPlotterPrinter(PlotterPrinter):
         x1, y1 = myTm.transform(-1.0, 0.0)
         x2, y2 = myTm.transform(1.0, 0.0)
         dwg.add(dwg.line((x1, y1),
-                         (x2,y2),
+                         (x2, y2),
                          stroke='black'))
 
         dwg.add(dwg.text("N",
@@ -173,14 +180,16 @@ class SvgPlotterPrinter(PlotterPrinter):
         """Einen Strich der Kompassrose mit angeschriebener Gradzahl darstellen
         """
         bogwink = (2 * math.pi * angle) / 360.0
-        part_tm = TransformationMatrix.from_params_simple(xc, yc, radius, bogwink)
+        part_tm = TransformationMatrix.from_params_simple(
+            xc, yc, radius, bogwink)
         my_tm = TransformationMatrix.from_followed_trans(part_tm, tm)
         x1, y1 = my_tm.transform(0.0, -1.0)
         x2, y2 = my_tm.transform(0.0, -1.0 - tl)
         dwg.add(dwg.line((x1, y1),
                          (x2, y2),
                          stroke='black'))
-        self.__print_rot_angletxt(dwg, my_tm, angle, 0.0, -1.0 -1.2*tl, pangle)
+        self.__print_rot_angletxt(
+            dwg, my_tm, angle, 0.0, -1.0 - 1.2 * tl, pangle)
 
     def __print_rot_angletxt(self, paro, tm, angle, xt, yt, pangle):
         atxt = "{0:03.0f}".format(pangle)
@@ -205,47 +214,51 @@ class SvgPlotterPrinter(PlotterPrinter):
         xc = (self.min * self.laengen_m + 10) / 2.0
         x1, y1 = xc - 25, uy + 2
         x2, y2 = xc + 25, uy + 2
-        dwg.add(dwg.line(self.get_mm((x1, y1)), self.get_mm((x2, y2)), stroke="black"))
-        dwg.add(dwg.line(self.get_mm((x1, y1-2)),self.get_mm((x1, y1+2)), stroke="black"))
-        dwg.add(dwg.line(self.get_mm((x2, y1-2)),self.get_mm((x2, y1+2)), stroke="black"))
+        dwg.add(dwg.line(self.get_mm((x1, y1)),
+                         self.get_mm((x2, y2)), stroke="black"))
+        dwg.add(dwg.line(self.get_mm((x1, y1 - 2)),
+                         self.get_mm((x1, y1 + 2)), stroke="black"))
+        dwg.add(dwg.line(self.get_mm((x2, y1 - 2)),
+                         self.get_mm((x2, y1 + 2)), stroke="black"))
         dwg.add(dwg.text("5cm",
-                         insert=(xc*MM_FACT, uy*MM_FACT),
+                         insert=(xc * MM_FACT, uy * MM_FACT),
                          font_size="9",
                          text_anchor="middle"
-                ))
+                         ))
 
     def __print_logo_and_else(self, dwg):
         lw = 4 * self.related_30_scale
         th = 3.8 * self.related_30_scale
         y = (self.min * self.breiten_m) * 0.8
         x = (self.min * self.laengen_m) / 2.0
-        dwg.add(dwg.text("Maßstab: 1:{}".format(self.mass), 
-                         insert=self.get_mm((x, y+lw)), 
+        dwg.add(dwg.text("Maßstab: 1:{}".format(self.mass),
+                         insert=self.get_mm((x, y + lw)),
                          font_size=self.get_mm(th),
                          text_anchor="middle"))
         dwg.add(dwg.text("{:0.0f}°N".format(self.breite),
-                         insert=self.get_mm((x, y+2*lw)),
+                         insert=self.get_mm((x, y + 2 * lw)),
                          font_size=self.get_mm(th),
                          text_anchor="middle"))
         dwg.add(dwg.text("Missweisung: {:0.1f}°".format(self.miss),
-                         insert=self.get_mm((x, y+3*lw)),
+                         insert=self.get_mm((x, y + 3 * lw)),
                          font_size=self.get_mm(th),
                          text_anchor="middle"))
         picscale = 0.333 * (30000 / self.mass) / MM_FACT
         picwidth = 248 * picscale
         picheight = 150 * picscale
-        y = self.min * self.breiten_m * 0.15 - picheight/2
+        y = self.min * self.breiten_m * 0.15 - picheight / 2
         self.__add_image(dwg, "Wimpelh150.jpg",
-                             x -  picwidth/2, y,
-                             "{}mm".format(picwidth), "{}mm".format(picheight))
+                         x - picwidth / 2, y,
+                         "{}mm".format(picwidth), "{}mm".format(picheight))
         dwg.add(dwg.text("Essener-Faltboot-Fahrer e.V.",
-                         insert=self.get_mm((x, y + picheight + lw )),
+                         insert=self.get_mm((x, y + picheight + lw)),
                          font_size=self.get_mm(th),
                          text_anchor="middle"))
 
     def __add_image(self, dwg, filename, x, y, width, height):
         absp = os.path.abspath(filename)
-        imgurl="file:///{}".format(absp)
-        img = dwg.image(href=imgurl, insert=self.get_mm((x, y)), size=(width, height))
+        imgurl = "file:///{}".format(absp)
+        img = dwg.image(href=imgurl, insert=self.get_mm(
+            (x, y)), size=(width, height))
         img.fit()
         dwg.add(img)
