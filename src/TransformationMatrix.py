@@ -38,6 +38,12 @@ class TransformationMatrix():
             self.transmat.A[1,2])
         return answ
 
+    def get_scale(self):
+        """gibt den aktuellen Skalierungsfaktor der Matrix zurück
+        """
+        x1, y1 = self.transform(0.0, 0.0)
+        x2, y2 = self.transform(1.0, 0.0)
+        return math.sqrt(math.pow(x2-x1, 2) + math.pow(y2-y1, 2))
     
     @classmethod
     def from_trans_mat(cls, other):

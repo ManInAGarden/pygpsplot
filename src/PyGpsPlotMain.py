@@ -4,8 +4,9 @@
 #main prog with tcl gui
 import tkinter as tki
 #from tkinter.filedialog import askdirectory
-from TclWinBase import *
-from PlotterPrinter import *
+from tclwinbase import *
+from tkiplotterprinter import *
+from svgplotterprinter import *
 
 class PyGpsPlotMain(TclWinBase):
     """Main Window für PyGpsPlotter
@@ -89,8 +90,8 @@ class PyGpsPlotMain(TclWinBase):
         m = self.massstab_tv.get()
         bm = self.minuten_tv.get()
         br = self.breitengrad_tv.get()
-        plotter = PlotterPrinter(br, m, mw, bm)
-        plotter.print_on_canvas(self.canvas)
+        plotter = TkiPlotterPrinter(br, m, mw, bm)
+        plotter.print(self.canvas)
 
     def create_svg(self):
         """cmd um den Plotter im svg-format zu produzieren
@@ -99,8 +100,8 @@ class PyGpsPlotMain(TclWinBase):
         m = self.massstab_tv.get()
         bm = self.minuten_tv.get()
         br = self.breitengrad_tv.get()
-        plotter = PlotterPrinter(br, m, mw, bm)
-        plotter.produce_svg()
+        plotter = SvgPlotterPrinter(br, m, mw, bm)
+        plotter.print("plotter.svg")
 
 if __name__ == '__main__':
     MW = PyGpsPlotMain("PyGpsPlot")
