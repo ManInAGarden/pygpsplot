@@ -55,6 +55,10 @@ Temporary Items
 .vscode
 .vscode/*
 
+#cx_freeze
+build
+build/*
+
 #virtualenv pylint python related ...
 .pylintrc
 __pycache__
